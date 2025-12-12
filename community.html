@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community Rules | DetectionHUB</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+    </svg>
+    Detection<span>HUB</span>
+  </div>
+  <nav class="nav-text">
+    <a href="index.html" class="nav-link">Matrix</a>
+    <a href="community.html" class="nav-link active">Community</a>
+    <a href="create-rule.html" class="nav-link">Create Rule</a>
+    <a href="documentation.html" class="nav-link">Docs</a>
+  </nav>
+</header>
+
+<main class="container">
+  <div class="page-header">
+    <h1 class="page-title">Community Rules</h1>
+    <p style="color:var(--text-muted);">Browse crowdsourced detection logic.</p>
+  </div>
+
+  <div class="matrix-controls" style="background:white; border:none; padding:0 0 20px 0;">
+    <div class="search-bar" style="max-width:100%;">
+  <input type="text" id="search-input-community" placeholder="Search rules..." style="width:100%;">
+</div>
+  </div>
+
+  <div class="card-grid" id="community-rules-container">
+    <div style="text-align:center; grid-column:1/-1; padding:40px;">Loading rules...</div>
+  </div>
+</main>
+
+<!-- Sidebar Overlay -->
+<div id="community-sidebar-overlay" class="sidebar-overlay" onclick="closeSidebarCommunity()"></div>
+
+<!-- Sidebar -->
+<aside id="community-sidebar" class="sidebar">
+  <div class="sidebar-header">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="badge primary" id="sb-id">ID</span>
+      <button onclick="closeSidebarCommunity()" style="background:none; border:none; cursor:pointer; font-size:1.2rem; color:#999;">&times;</button>
+    </div>
+    <h2 id="sb-title" class="sidebar-title">Title</h2>
+    <p id="sb-desc" class="sidebar-desc">Description...</p>
+  </div>
+
+  <div class="sidebar-content">
+    <h4 style="margin-top:10px; font-size:0.85rem; color:#666;">Sub-items</h4>
+    <div id="sb-subtechniques" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
+
+    <div id="sb-rules-list" style="margin-top:15px;"></div>
+  </div>
+</aside>
+
+<script src="communit.js"></script>
+</body>
+</html>

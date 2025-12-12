@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DetectionHUB | Community Matrix</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <svg class="icon" style="width:24px; height:24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+      </svg>
+      Detection<span>HUB</span>
+    </div>
+    <nav class="nav-text">
+      <a href="index.html" class="nav-link active">Matrix</a>
+      <a href="create-rule.html" class="nav-link">Create JSON</a>
+      <a href="community.html" class="nav-link">Community</a>
+      <a href="documentation.html" class="nav-link">Docs</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Matrix Controls -->
+    <div class="matrix-controls">
+      <div class="search-bar">
+        <svg class="search-icon icon" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="search-input" placeholder="Search...">
+      </div>
+    </div>
+
+    <!-- Matrix Grid -->
+    <div class="matrix-scroll-area">
+      <div class="matrix-grid" id="matrix-grid">
+        <!-- Populated by JS -->
+        <div style="padding:20px; color:#666;">Loading Matrix...</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div style="display:flex; justify-content:space-between; align-items:start;">
+        <div class="sidebar-badges">
+          <span class="badge primary" id="sb-id">ID</span>
+          <span class="badge">Category</span>
+        </div>
+        <button onclick="closeSidebar()" style="background:none; border:none; cursor:pointer; font-size:1.2rem; color:#999;">&times;</button>
+      </div>
+      <h2 class="sidebar-title" id="sb-title">Title</h2>
+      <p class="sidebar-desc" id="sb-desc">Description...</p>
+    </div>
+
+    <div class="sidebar-content">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="details" onclick="switchTab('detailsbtn')">Details</button>
+        <button class="tab-btn" data-tab="rules" onclick="switchTab('rules')">Rules</button>
+      </div>
+
+      <!-- Details Tab -->
+      <div id="tab-details" class="tab-content active">
+        <h3 style="font-size:0.85rem; text-transform:uppercase; color:#666; margin-bottom:10px; font-weight:600;">Sub-items</h3>
+        <div id="sb-subtechniques" style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:20px;">
+          <!-- Badges -->
+        </div>
+      </div>
+
+      <!-- Rules Tab -->
+      <div id="tab-rules" class="tab-content">
+        <div id="sb-rules-list">
+          <!-- Rules populated by JS -->
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <script src="matrix.js"></script>
+</body>
+</html>

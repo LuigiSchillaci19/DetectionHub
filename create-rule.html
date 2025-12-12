@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DetectionHUB | Create Rule</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg class="icon" style="width:24px; height:24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+    </svg>
+    Detection<span>HUB</span>
+  </div>
+  <nav class="nav-text">
+    <a href="index.html" class="nav-link active">Matrix</a>
+    <a href="create-rule.html" class="nav-link">Create JSON</a>
+    <a href="community.html" class="nav-link">Community</a>
+    <a href="documentation.html" class="nav-link">Docs</a>
+  </nav>
+</header>
+
+<main class="container">
+  <div class="page-header">
+    <h1 class="page-title">Create Detection Rule</h1>
+    <p style="color:var(--text-muted);">Generate a standardized JS object for the matrix.</p>
+  </div>
+
+  <div id="json-generator" class="card-grid">
+
+    <!-- Form -->
+    <div class="card">
+      <div class="card-header"><h3>Rule Details</h3></div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">MITRE ID</label>
+          <input type="text" id="in-id" class="form-control" placeholder="T1087.002">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Title / Description</label>
+          <input type="text" id="in-title" class="form-control" placeholder="AD User Enumeration">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tactic</label>
+          <select id="in-tactic" class="form-control">
+            <option value="TA0001">Initial Access (TA0001)</option>
+            <option value="TA0002">Execution (TA0002)</option>
+            <option value="TA0003">Persistence (TA0003)</option>
+            <option value="TA0004">Privilege Escalation (TA0004)</option>
+            <option value="TA0005">Defense Evasion (TA0005)</option>
+            <option value="TA0006">Credential Access (TA0006)</option>
+            <option value="TA0007">Discovery (TA0007)</option>
+            <option value="TA0008">Lateral Movement (TA0008)</option>
+            <option value="TA0009">Collection (TA0009)</option>
+            <option value="TA0010">Exfiltration (TA0010)</option>
+            <option value="TA0011">Command and Control (TA0011)</option>
+          </select>
+        </div>
+
+        <div id="queries-container">
+          <div class="query-block">
+            <span class="remove-query" onclick="this.parentElement.remove()">×</span>
+            <div class="form-group">
+              <label class="form-label">SIEM Type</label>
+              <select class="query-siem form-control">
+                <option value="Sentinel KQL">Sentinel KQL</option>
+                <option value="Splunk SPL">Splunk SPL</option>
+                <option value="Elastic Query">Elastic Query</option>
+                <option value="QRadar AQL">QRadar AQL</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Query</label>
+              <textarea class="query-code form-control" rows="5" placeholder="Paste your query here..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <button id="add-query-btn" class="btn btn-outline">Add Another Query</button>
+        <button id="generate-btn" class="btn btn-primary">Generate JS Rule</button>
+      </div>
+    </div>
+
+    <!-- Output -->
+    <div class="card">
+      <div class="card-header"><h3>Output JS</h3></div>
+      <div class="card-body">
+        <pre id="out-json" class="code-block">// JS code will appear here...</pre>
+        <button id="download-btn" class="btn btn-primary">Download JS</button>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+const addQueryBtn = document.getElementById('add-query-btn');
+const generateBtn = document.getElementById('generate-btn');
+const downloadBtn = document.getElementById('download-btn');
+const queriesContainer = document.getElementById('queries-container');
+const outJson = document.getElementById('out-json');
+let generatedRule = '';
+
+addQueryBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  const block = document.createElement('div');
+  block.className = 'query-block';
+  block.innerHTML = `
+    <span class="remove-query" onclick="this.parentElement.remove()">×</span>
+    <div class="form-group">
+      <label class="form-label">SIEM Type</label>
+      <select class="query-siem form-control">
+        <option value="Sentinel KQL">Sentinel KQL</option>
+        <option value="Splunk SPL">Splunk SPL</option>
+        <option value="Elastic Query">Elastic Query</option>
+        <option value="QRadar AQL">QRadar AQL</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Query</label>
+      <textarea class="query-code form-control" rows="5" placeholder="Paste your query here..."></textarea>
+    </div>
+  `;
+  queriesContainer.appendChild(block);
+});
+
+generateBtn.addEventListener('click', () => {
+  const id = document.getElementById('in-id').value.trim();
+  const name = document.getElementById('in-title').value.trim();
+  const tactic = document.getElementById('in-tactic').value;
+
+  if (!id || !name) { alert('Fill MITRE ID and Title'); return; }
+
+  const rules = [];
+  document.querySelectorAll('.query-block').forEach(block => {
+    const siem = block.querySelector('.query-siem').value;
+    const code = block.querySelector('.query-code').value.trim();
+    if (code) {
+      rules.push(`{
+  type: "${siem}",
+  lang: "${siem.split(' ')[0].toLowerCase()}",
+  code: \`${code}\`
+}`);
+    }
+  });
+
+  if (rules.length === 0) { alert('Add at least one query'); return; }
+
+  generatedRule = `
+{
+id: "${id}",
+name: "${name}",
+description: \`${name}\`,
+tactic: "${tactic}",
+rules: [
+${rules.join(',\n')}
+]
+}`;
+
+  outJson.textContent = generatedRule;
+});
+
+downloadBtn.addEventListener('click', () => {
+  if (!generatedRule) { alert('Generate a rule first.'); return; }
+  const dataStr = "data:text/javascript;charset=utf-8," + encodeURIComponent(generatedRule);
+  const dlAnchor = document.createElement('a');
+  dlAnchor.setAttribute("href", dataStr);
+  dlAnchor.setAttribute("download", "matrix-rule.js");
+  dlAnchor.click();
+});
+</script>
+
+</body>
+</html>
