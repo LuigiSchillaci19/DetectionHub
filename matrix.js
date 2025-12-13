@@ -206,7 +206,7 @@ WHERE domainid = 1
         type: "Sentinel KQL",
         lang: "sentinel",
         code: `EmailAttachmentInfo
-| where FileExtension in ("exe","js","hta")
+| where FileExtension in (".exe",".js",".hta")
 | project RecipientEmailAddress,SenderDisplayName,SenderFromAddress,FileName,FileExtension,SHA256`
       },
       {
