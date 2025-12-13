@@ -206,7 +206,7 @@ WHERE domainid = 1
         type: "Sentinel KQL",
         lang: "sentinel",
         code: `EmailAttachmentInfo
-| where FileExtension in (".exe",".js",".hta")
+| where FileExtension in ("exe","js","hta")
 | project RecipientEmailAddress,SenderDisplayName,SenderFromAddress,FileName,FileExtension,SHA256`
       },
       {
@@ -455,6 +455,85 @@ reg
   // TA0005 – Defense Evasion
   // ======================
   "TA0005": [
+  // Defense Evasion rules
+{
+  id: "T1562.001",
+  name: "Disabilitazione Antivirus / Microsoft Defender",
+  description: "Tentativi di disabilitare o alterare lo stato di Defender/AV.",
+  details: {
+    category: "Defense Evasion",
+    detailsMarkdown: ""
+  },
+  rules: [
+    {
+      type: "Splunk SPL",
+      lang: "splunk",
+      code: `index=wineventlog EventCode=5001 OR EventCode=5010`
+    },
+    {
+      type: "QRadar AQL",
+      lang: "qradar",
+      code: `SELECT * FROM events WHERE EventID IN (5001, 5010)`
+    },
+    {
+      type: "Sentinel KQL",
+      lang: "sentinel",
+      code: `SecurityEvent | where EventID in (5001, 5010)`
+    }
+  ]
+},
+{
+  id: "T1562.004",
+  name: "Stop / Disable di servizi di sicurezza (EDR / AV)",
+  description: "Arresto o modifica dello stato dei servizi di sicurezza.",
+  details: {
+    category: "Defense Evasion",
+    detailsMarkdown: ""
+  },
+  rules: [
+    {
+      type: "Splunk SPL",
+      lang: "splunk",
+      code: `index=wineventlog EventCode=7040`
+    },
+    {
+      type: "QRadar AQL",
+      lang: "qradar",
+      code: `SELECT * FROM events WHERE EventID = 7040`
+    },
+    {
+      type: "Sentinel KQL",
+      lang: "sentinel",
+      code: `SecurityEvent | where EventID == 7040`
+    }
+  ]
+},
+{
+  id: "T1070.001",
+  name: "Cancellazione Event Log",
+  description: "Pulizia dei log per nascondere attività malevole.",
+  details: {
+    category: "Defense Evasion",
+    detailsMarkdown: ""
+  },
+  rules: [
+    {
+      type: "Splunk SPL",
+      lang: "splunk",
+      code: `index=wineventlog EventCode=1102`
+    },
+    {
+      type: "QRadar AQL",
+      lang: "qradar",
+      code: `SELECT * FROM events WHERE EventID = 1102`
+    },
+    {
+      type: "Sentinel KQL",
+      lang: "sentinel",
+      code: `SecurityEvent | where EventID == 1102`
+    }
+  ]
+}
    ],
    
  
@@ -716,7 +795,28 @@ DeviceProcessEvents
     id: "T1018",
     name: "BloodHound / SharpHound Recon",
     description: "Detects BloodHound and SharpHound collection activity.",
-    rules: [
+    details: {
+      category: "Remote Services",
+      detailsMarkdown: `
+### 🔥 Severity
+**High**
+### 🔗 Riferimenti
+- [MITRE T1135](https://attack.mitre.org/techniques/T1135/)
+- [Event ID 4625](https://learn.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4625)
+- [AbuseIPDB](https://www.abuseipdb.com/)
+- [VirusTotal](https://www.virustotal.com/)
+### 🔍 Checks da fare
+1. Verificare Event ID **4625**
+2. Controllare IP sorgente
+3. Correlare con **4624**
+4. OSINT (AbuseIPDB, VirusTotal)
+
+### 🛠 Detection Notes
+- Possibili falsi positivi
+- Jump server
+- Orari non lavorativi
+`
+    },    rules: [
       {
         type: "Sentinel KQL",
         lang: "sentinel",
@@ -730,6 +830,83 @@ DeviceProcessEvents
     ]
   }
  ],
+ 
+ 
+ //IMPACT
+ "TA0040": [
+{
+  id: "T1486",
+  name: "Data Encryption for Impact (Ransomware)",
+  description: "Detects behaviors associated with ransomware encryption activity.",
+  details: {
+    category: "Impact",
+    detailsMarkdown: ""
+  },
+  rules: [
+    {
+      type: "Sentinel KQL",
+      lang: "sentinel",
+      code: `DeviceFileEvents
+| summarize FileMod=count() by DeviceName, InitiatingProcessFileName
+| where FileMod > 1000`
+    },
+    {
+      type: "Splunk SPL",
+      lang: "splunk",
+      code: `index=*
+| stats count as FileMod by host process
+| where FileMod > 1000`
+    },
+    {
+      type: "QRadar AQL",
+      lang: "qradar",
+      code: `SELECT Hostname, COUNT(*) as FileMod
+FROM file_events
+GROUP BY Hostname
+HAVING COUNT(*) > 1000`
+    }
+  ]
+}
+],
+
+ //Data exfiltration
+  "TA0010": [
+{
+  id: "T1041",
+  name: "Large Outbound Data Transfer",
+  description: "Detects unusually large outbound data transfers that may indicate data exfiltration.",
+  details: {
+    category: "Exfiltration",
+    detailsMarkdown: ""
+  },
+  rules: [
+    {
+      type: "Sentinel KQL",
+      lang: "sentinel",
+      code: `CommonSecurityLog
+| summarize BytesSent=sum(SentBytes) by SourceIP, DestinationIP
+| where BytesSent > 50000000`
+    },
+    {
+      type: "Splunk SPL",
+      lang: "splunk",
+      code: `index=network
+| stats sum(bytes_out) as BytesSent by src_ip dest_ip
+| where BytesSent > 50000000`
+    },
+    {
+      type: "QRadar AQL",
+      lang: "qradar",
+      code: `SELECT SourceIP, DestinationIP, SUM(BytesSent)
+FROM events
+GROUP BY SourceIP, DestinationIP
+HAVING SUM(BytesSent) > 50000000`
+    }
+  ]
+}
+]
+ 
+ 
 };
 
  
@@ -790,6 +967,17 @@ function renderMatrix() {
   });
 }
 
+function renderMarkdown(md) {
+  return md
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+    .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+    .replace(/\n\d+\. (.*)/g, '<li>$1</li>')
+    .replace(/\n/g, '<br>');
+}
+
 function setupSearch() {
   if (!searchInput) return;
   searchInput.addEventListener('input', e => {
@@ -807,11 +995,24 @@ function openSidebar(tech) {
   sidebar.querySelector('#sb-title').textContent = tech.name || '';
   sidebar.querySelector('#sb-id').textContent = tech.id || '';
   sidebar.querySelector('#sb-desc').textContent = tech.description || '';
+  
+  
+	const sub = sidebar.querySelector('#sb-subtechniques');
+const details = sidebar.querySelector('#sb-details');
 
-  const sub = sidebar.querySelector('#sb-subtechniques');
-  sub.innerHTML = tech.subtechniques?.map(s => `<span class="badge">${s}</span>`).join('') || '<span class="text-muted">None</span>';
+/* Subtechniques */
+sub.innerHTML = tech.subtechniques?.length
+  ? tech.subtechniques.map(s => `<span class="badge">${s}</span>`).join('')
+  : '<span class="text-muted"></span>';
 
-  renderRules(tech.rules || []);
+/* Details markdown */
+if (tech.details?.detailsMarkdown) {
+  details.innerHTML = renderMarkdown(tech.details.detailsMarkdown);
+} else {
+  details.innerHTML = '<span class="text-muted">No additional notes</span>';
+}
+
+    renderRules(tech.rules || []);
 
   // Show sidebar & overlay
   sidebar.classList.add('open');
