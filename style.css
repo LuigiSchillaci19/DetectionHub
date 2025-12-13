@@ -241,6 +241,29 @@ main {
   color: #64748B;
 }
 
+#sb-details a {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+#sb-details a:hover {
+  text-decoration: underline;
+}
+.details-markdown h3 {
+  margin-top: 15px;
+  margin-bottom: 5px;
+  color: var(--primary);
+}
+
+.details-markdown li {
+  margin-left: 20px;
+  margin-bottom: 6px;
+}
+
+.details-markdown strong {
+  color: #DC2626;
+}
+
 .technique-card {
   background: white;
   border: 1px solid var(--border);
@@ -523,3 +546,4 @@ textarea.form-control {
     display: none;
   }
 }
+
