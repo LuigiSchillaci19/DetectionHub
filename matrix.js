@@ -1069,3 +1069,4 @@ function switchTab(tabName) {
 // Expose globally
 window.closeSidebar = closeSidebar;
 window.switchTab = switchTab;
+
